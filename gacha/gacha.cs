@@ -25,30 +25,40 @@ namespace Warudo.Plugins.Core.Nodes {
     }
 
     // ガチャデータベース
-    public struct GachaDatabase {
-        public GachaDatabase() {
-            GACHA_ITEM_LIST = new Dictionary<int, GachaItem[]>();
+    public struct GachaDatabaseStruct {
+        public GachaDatabaseStruct() {
+            GACHA_ITEM_LIST = new Dictionary<(int, int), GachaItem[]>();
         }
 
-        public Add(int gachaId, GachaItem[] gachaItemList) {
-            if (GACHA_ITEM_LIST.Contains(gachaId)) {
-                self.Remove(gachaId);
-            }
-            GACHA_ITEM_LIST.Add(gachaId, gachaItemList);
-        }
-
-        public Remove(int gachaId) {
-            GACHA_ITEM_LIST.Remove(gachaId);
-        }
-
-        public Get(int gachaId) {
-            return GACHA_ITEM_LIST[gachaId];
-        }
-
-        public Dictionary<int, GachaItem[]> GACHA_ITEM_LIST { get; set; }
+        public Dictionary<(int, int), GachaItem[]> GACHA_ITEM_LIST { get; set; }
     }
 
-    public static GachaDatabase gachaDatabase;
+    public static class GachaDatabase {
+        public static GachaDatabaseStruct data { get; set; };
+
+        public static add(GachaItem gachaItem) {
+            gachaId = gachaItem.GACHA_ID;
+            gachaItemNum = gachaItem.ITEM_NUMBER;
+            if (data.GACHA_ITEM_LIST.Contains(gachaId, gachaItemNum)) {
+                self.Remove(gachaId, gachaItemNum);
+            }
+            data.GACHA_ITEM_LIST.Add((gachaId, gachaItemNum), gachaItem);
+        }
+
+        public static remove(int gachaId, int gachaItemNum) {
+            data.GACHA_ITEM_LIST.Remove(gachaId, gachaItemNum);
+        }
+
+        public static get(int gachaId, int gachaItemNum) {
+            // TODO バリデーション
+            return data.GACHA_ITEM_LIST[gachaId][gachaItemNum];
+        }
+
+        public static destroy() {
+            // TODO 明示的にディクショナリは捨てた方がいいか？
+            data.GACHA_ITEM_LIST = new Dictionary<(int, int), GachaItem[]>();
+        }
+    }
 
     // TODO カテゴリーをなんとかする
     [NodeType(
@@ -62,26 +72,33 @@ namespace Warudo.Plugins.Core.Nodes {
         [Label("GACHA_ITEM_LIST")]
         public string[] GachaItemList;
 
-        public int counter = 0;
+        [DataOutput]
+        [Label("DEBUG_GACHA")]
+        public string[] DebugGachaList; // でバック用
+
+        public int counter = 0; // でバック用
 
         protected override void OnCreate() {
             base.OnCreate();
-            Watch(nameof(GachaData), SetupGachaDatabase);
+            Watch(nameof(GachaItemList), SetupGachaDatabase);
             SetupGachaDatabase();
         }
         
         public void SetupGachaDatabase() {
-            // ここ
+            GachaDatabase.destroy();
             foreach (string gachaItemStr in GachaItemList) {
                 string[] gachaItemPropList = gachaItemStr.Split(',');
                 // TODO バリデーション, ガチャID-景品Noユニーク判定
-                Int32.TryParse(gachaItemPropList[0], out int gachaId);
-                gachaItemPropList[1];
-                gachaItemPropList[2];
-                gachaItemPropList[3];
-                gachaItemPropList[4];
+                Int32.TryParse(gachaItemPropList[0], out int id);
+                Int32.TryParse(gachaItemPropList[1], out int num);
+                string itemName = gachaItemPropList[2];
+                float.TryParse(gachaItemPropList[3], out float weight);
+                Int32.TryParse(gachaItemPropList[4], out int rare);
+                GachaDatabase.add(
+                    GachaItem(id, num, itemName, weight, rare);
+                );
             }
-            gachaDatabase.Add();
+            GachaDatabase.get(0,0); // TODO
         }
     }
 
