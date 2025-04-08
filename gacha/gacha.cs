@@ -33,20 +33,24 @@ namespace Warudo.Plugins.Core.Nodes
     {
         public GachaDatabase()
         {
-            this.GACHA_ITEM_LIST = new Dictionary<(int, int), GachaItem>();
+            this.GACHA_ITEM_LIST = new Dictionary<int, GachaItem[]>();
         }
 
-        public void Add(int gachaId, int itemNumber, GachaItem gachaItem)
+        public void Add(int gachaId, GachaItem gachaItem)
         {
-            this.GACHA_ITEM_LIST.Add((gachaId, itemNumber), gachaItem);
+            GachaItem[] source = Get(gachaId);
+            GachaItem[] dest = new GachaItem[source.Length + 1];
+            Array.Copy(source, dest, source.Length);
+            dest[dest.Length - 1] = gachaItem;
+            this.GACHA_ITEM_LIST.Add(gachaId, dest);
         }
 
-        public GachaItem Get()
+        public GachaItem[] Get(int id)
         {
-            return this.GACHA_ITEM_LIST[(0, 0)];
+            return this.GACHA_ITEM_LIST[id];
         }
 
-        public Dictionary<(int, int), GachaItem> GACHA_ITEM_LIST { get; set; }
+        public Dictionary<int, GachaItem[]> GACHA_ITEM_LIST { get; set; }
     }
 
     public static class GachaDatabaseManage
@@ -76,13 +80,13 @@ namespace Warudo.Plugins.Core.Nodes
 
         public void SetupGachaDatabase()
         {
-            foreach (string item in GachaItemList) {
+            foreach (string item in GachaItemList)
+            {
                 string[] propList = item.Split(',');
                 int id = Convert.ToInt32(propList[0]);
                 int num = Convert.ToInt32(propList[1]);
                 GachaDatabaseManage.data.Add(
                     id,
-                    num,
                     new GachaItem(
                         id,
                         num,
@@ -141,10 +145,26 @@ namespace Warudo.Plugins.Core.Nodes
 
         protected void gachagacha(int id)
         {
-            ItemNumber = 2;
-            ItemName = "test";
-            ItemWeight = 3.5f;
-            Rare = 4;
+            // GachaItem[] itemList = GachaDatabaseManage.data.Get(id);
+            // foreach (GachaItem item in itemList) {
+            //     // TODO
+            // }
+            GachaDatabaseManage.data.Add(
+                id,
+                new GachaItem(
+                    id,
+                    2,
+                    "tesw",
+                    2.3f,
+                    5
+                )
+            );
+
+            // TODO 値参照例外処理
+            ItemNumber = 1;
+            ItemName = "trsssafvasfe";
+            ItemWeight = 4.4f;
+            Rare = 2;
         }
     }
 }
