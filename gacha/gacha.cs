@@ -12,93 +12,18 @@ namespace Warudo.Plugins.Core.Nodes
     // ガチャアイテム構造体
     public readonly struct GachaItem
     {
-        public GachaItem(int gachaId, int itemNumber, string itemName, float weight, int rare)
+        public GachaItem(int num, string itemName, float weight, int rare)
         {
-            GACHA_ID = gachaId;
-            ITEM_NUMBER = itemNumber;
+            ITEM_NUM = num;
             ITEM_NAME = itemName;
             WEIGHT = weight;
             RARE = rare;
         }
 
-        public int GACHA_ID { get; }
-        public int ITEM_NUMBER { get; }
+        public int ITEM_NUM { get; }
         public string ITEM_NAME { get; }
         public float WEIGHT { get; }
         public int RARE { get; }
-    }
-
-    // ガチャデータベース
-    public class GachaDatabase
-    {
-        public GachaDatabase()
-        {
-            this.GACHA_ITEM_LIST = new Dictionary<int, GachaItem[]>();
-        }
-
-        public void Add(int gachaId, GachaItem gachaItem)
-        {
-            GachaItem[] source = Get(gachaId);
-            GachaItem[] dest = new GachaItem[source.Length + 1];
-            Array.Copy(source, dest, source.Length);
-            dest[dest.Length - 1] = gachaItem;
-            this.GACHA_ITEM_LIST.Add(gachaId, dest);
-        }
-
-        public GachaItem[] Get(int id)
-        {
-            return this.GACHA_ITEM_LIST[id];
-        }
-
-        public Dictionary<int, GachaItem[]> GACHA_ITEM_LIST { get; set; }
-    }
-
-    public static class GachaDatabaseManage
-    {
-        public static GachaDatabase data = new GachaDatabase();
-    }
-
-    // TODO カテゴリーをなんとかする
-    [NodeType(
-        Id = "684E705F-3C14-45F8-8A5C-E6666873BF93",
-        Title = "setGachaItemList",
-        Category = "Gacha"
-    )]
-    public class SetGachaItemList : Node
-    {
-
-        [DataInput]
-        [Label("GACHA_ITEM_LIST")]
-        public string[] GachaItemList;
-
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-            Watch(nameof(GachaItemList), SetupGachaDatabase);
-            SetupGachaDatabase();
-        }
-
-        public void SetupGachaDatabase()
-        {
-            foreach (string item in GachaItemList)
-            {
-                string[] propList = item.Split(',');
-                int id = Convert.ToInt32(propList[0]);
-                int num = Convert.ToInt32(propList[1]);
-                GachaDatabaseManage.data.Add(
-                    id,
-                    new GachaItem(
-                        id,
-                        num,
-                        propList[2],
-                        Convert.ToSingle(propList[3]),
-                        Convert.ToInt32(propList[4])
-                    )
-                );
-                // 0,0,testname,0.5,2
-                // GachaDatabaseManage.data.Add(0, 0, new GachaItem(0, 0, "testname", 0.5f, 2));
-            }
-        }
     }
 
     // TODO カテゴリーをなんとかする
@@ -111,18 +36,20 @@ namespace Warudo.Plugins.Core.Nodes
     {
 
         [DataInput]
-        [Label("GACHA_ID")]
-        public int GachaId;
+        [Label("GACHA_ITEM_LIST")]
+        public string[] GachaItemList;
 
         public int ItemNumber;
         public string ItemName;
         public float ItemWeight;
         public int Rare;
 
+        public string DebugStr; // debug
+
         [FlowInput]
         public Continuation Enter()
         {
-            gachagacha(this.GachaId);
+            gachagacha();
             return Exit;
         }
 
@@ -139,32 +66,89 @@ namespace Warudo.Plugins.Core.Nodes
         [Label("RARE")] // You can customize the port label
         public int ShowRare() { return Rare; }
 
+        [DataOutput]
+        [Label("DEBUG")] // You can customize the port label
+        public string ShowDebug() { return DebugStr; } // debug
+
         // Usually, we name the default flow input "Exit".
         [FlowOutput]
         public Continuation Exit;
 
-        protected void gachagacha(int id)
-        {
-            // GachaItem[] itemList = GachaDatabaseManage.data.Get(id);
-            // foreach (GachaItem item in itemList) {
-            //     // TODO
-            // }
-            GachaDatabaseManage.data.Add(
-                id,
-                new GachaItem(
-                    id,
-                    2,
-                    "tesw",
-                    2.3f,
-                    5
-                )
-            );
+        public Dictionary<int, GachaItem> GACHA_ITEM_LIST;
 
+        public DoGacha()
+        {
+            this.GACHA_ITEM_LIST = new Dictionary<int, GachaItem>();
+        }
+
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            Watch(nameof(GachaItemList), SetupGachaDatabase);
+            SetupGachaDatabase();
+        }
+
+        public void Add(int num, GachaItem gachaItem)
+        {
+            this.GACHA_ITEM_LIST.Add(num, gachaItem);
+        }
+
+        public Dictionary<int, GachaItem> Get()
+        {
+            return this.GACHA_ITEM_LIST;
+        }
+
+        public GachaItem GetByNum(int num)
+        {
+            return this.GACHA_ITEM_LIST[num];
+        }
+
+        public void SetupGachaDatabase()
+        {
+            // TODO 値検査
+            foreach (string item in GachaItemList)
+            {
+                string[] propList = item.Split(',');
+                int num = Convert.ToInt32(propList[0]);
+                Add(
+                    num,
+                    new GachaItem(
+                        num,
+                        propList[1],
+                        Convert.ToSingle(propList[2]),
+                        Convert.ToInt32(propList[3])
+                    )
+                );
+                // 0,testname,0.5,2
+                // GachaDatabaseManage.data.Add(0, 0, new GachaItem(0, 0, "testname", 0.5f, 2));
+            }
+        }
+
+        protected void gachagacha()
+        {
+            Dictionary<int, GachaItem> itemList = Get();
+
+            float sumWeight = 0.0f;
+            // TODO Dictionaryのforeachの書き方見直す
+            foreach (GachaItem item in itemList) {
+                sumWeight = sumWeight + item.WEIGHT;
+            }
+
+            float res = UnityEngine.Random.Range(0.0f, sumWeight);
+
+            float nowWeight = 0.0f;
+            foreach (GachaItem item in itemList) {
+                nowWeight = nowWeight + item.WEIGHT;
+                if (res <= nowWeight) {
+                    ItemNumber = num;
+                    ItemName = item.ITEM_NAME;
+                    ItemWeight = item.WEIGHT;
+                    Rare = item.RARE;
+                }
+            }
+
+            GachaItem item = GetByNum(0);
             // TODO 値参照例外処理
-            ItemNumber = 1;
-            ItemName = "trsssafvasfe";
-            ItemWeight = 4.4f;
-            Rare = 2;
         }
     }
 }
