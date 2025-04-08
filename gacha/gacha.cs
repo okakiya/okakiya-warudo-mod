@@ -4,6 +4,7 @@ using Warudo.Core.Data;
 using Warudo.Core.Graphs;
 using Warudo.Core.Localization;
 using System.Collections.Generic;
+using System;
 
 namespace Warudo.Plugins.Core.Nodes
 {
@@ -64,9 +65,7 @@ namespace Warudo.Plugins.Core.Nodes
 
         [DataInput]
         [Label("GACHA_ITEM_LIST")]
-        public string GachaItemList;
-
-        public int counter = 0; // でバック用
+        public string[] GachaItemList;
 
         protected override void OnCreate()
         {
@@ -77,8 +76,24 @@ namespace Warudo.Plugins.Core.Nodes
 
         public void SetupGachaDatabase()
         {
-            // TODO DataInputからの値を格納
-            GachaDatabaseManage.data.Add(0, 0, new GachaItem(0, 0, "testname", 0.5f, 2));
+            foreach (string item in GachaItemList) {
+                string[] propList = item.Split(',');
+                int id = Convert.ToInt32(propList[0]);
+                int num = Convert.ToInt32(propList[1]);
+                GachaDatabaseManage.data.Add(
+                    id,
+                    num,
+                    new GachaItem(
+                        id,
+                        num,
+                        propList[2],
+                        Convert.ToSingle(propList[3]),
+                        Convert.ToInt32(propList[4])
+                    )
+                );
+                // 0,0,testname,0.5,2
+                // GachaDatabaseManage.data.Add(0, 0, new GachaItem(0, 0, "testname", 0.5f, 2));
+            }
         }
     }
 
