@@ -26,6 +26,53 @@ namespace Warudo.Plugins.Core.Nodes
 
     // TODO カテゴリーをなんとかする
     [NodeType(
+        Id = "5b4080a5-9e9d-4f22-87fe-ac69536d5360",
+        Title = "makeGachaItem",
+        Category = "Gacha"
+    )]
+    public class MakeGachaItem : Node
+    {
+        [DataInput]
+        [Label("ItemNumber")]
+        public int ItemNumber = 1;
+
+        [DataInput]
+        [Label("ItemName")]
+        public string ItemName = "SR";
+
+        [DataInput]
+        [Label("Weight")]
+        public float Weight = 30;
+
+        [DataInput]
+        [Label("Rare")]
+        public int Rare = 1;
+
+        [DataOutput]
+        [Label("GachaItem")]
+        public string OutputGachaItem() { return GachaItem; }
+        public string GachaItem;
+
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            Watch(nameof(ItemNumber), Makeup);
+            Watch(nameof(ItemName), Makeup);
+            Watch(nameof(Weight), Makeup);
+            Watch(nameof(Rare), Makeup);
+            Makeup();
+        }
+
+        public void Makeup()
+        {
+            string [] words = {ItemNumber.ToString(), ItemName, Weight.ToString(), Rare.ToString()};
+            GachaItem = string.Join(",", words);
+        }
+    }
+
+
+    // TODO カテゴリーをなんとかする
+    [NodeType(
         Id = "1761f98b-2703-a91a-e094-8da9a2641180",
         Title = "doGacha",
         Category = "Gacha"
