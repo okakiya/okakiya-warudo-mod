@@ -24,10 +24,123 @@ namespace Warudo.Plugins.Core.Nodes
         public int RARE { get; }
     }
 
-    // TODO カテゴリーをなんとかする
+
+    [NodeType(
+        Id = "0ac03086-79f1-d79a-1578-0cd1f6e696f1",
+        Title = "RegisterGachaItem",
+        Category = "Gacha"
+    )]
+    public class RegisterGachaItem : Node
+    {
+        [DataInput]
+        [Label("Item1")]
+        public string Item1;
+
+        [DataInput]
+        [Label("Item2")]
+        public string Item2;
+
+        [DataInput]
+        [Label("Item3")]
+        public string Item3;
+
+        [DataInput]
+        [Label("Item4")]
+        public string Item4;
+
+        [DataInput]
+        [Label("Item5")]
+        public string Item5;
+
+        [DataInput]
+        [Label("Item6")]
+        public string Item6;
+
+        [DataInput]
+        [Label("Item7")]
+        public string Item7;
+
+        [DataInput]
+        [Label("Item8")]
+        public string Item8;
+
+        [DataInput]
+        [Label("Item9")]
+        public string Item9;
+
+        [DataOutput]
+        [Label("GachaItemList")]
+        public string[] OutputRegisterGahcaItemList() {
+            return RegisterGahcaItemList.ToArray();
+        }
+        public List<string> RegisterGahcaItemList = new List<string>();
+
+        [DataOutput]
+        [Label("Counter")]
+        public int ShowCounter() { return Counter; }
+        public int Counter;
+
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            Watch(nameof(Item1), Makeup);
+            Watch(nameof(Item2), Makeup);
+            Watch(nameof(Item3), Makeup);
+            Watch(nameof(Item4), Makeup);
+            Watch(nameof(Item5), Makeup);
+            Watch(nameof(Item6), Makeup);
+            Watch(nameof(Item7), Makeup);
+            Watch(nameof(Item8), Makeup);
+            Watch(nameof(Item9), Makeup);
+            Makeup();
+        }
+
+        public void Makeup()
+        {
+            Counter++;
+            RegisterGahcaItemList.Clear();
+            AddList(Item1);
+            AddList(Item2);
+            AddList(Item3);
+            AddList(Item4);
+            AddList(Item5);
+            AddList(Item6);
+            AddList(Item7);
+            AddList(Item8);
+            AddList(Item9);
+        }
+
+        public void AddList(string item)
+        {
+            if (item == null) {
+                return;
+            }
+            string[] propList = item.Split(',');
+            if (propList.Length >= 4)
+            {
+                // float weight = Convert.ToSingle(propList[2]);
+                float weight = 0.0f;
+                if (
+                    float.TryParse(propList[2], out weight) &&
+                    weight > 0
+                )
+                {
+                    RegisterGahcaItemList.Add(item);
+                }
+                // try
+                // {
+                //     float weight = Convert.ToSingle(propList[2]);
+                // }
+                // catch (Exception e) {
+                //     Console.WriteLine("Somthing Wrong.");
+                // }
+            }
+        }
+    }
+
     [NodeType(
         Id = "5b4080a5-9e9d-4f22-87fe-ac69536d5360",
-        Title = "makeGachaItem",
+        Title = "MakeGachaItem",
         Category = "Gacha"
     )]
     public class MakeGachaItem : Node
@@ -65,7 +178,8 @@ namespace Warudo.Plugins.Core.Nodes
 
         public void Makeup()
         {
-            string [] words = {ItemNumber.ToString(), ItemName, Weight.ToString(), Rare.ToString()};
+            // TODO バリデーション Weight>0
+            string[] words = { ItemNumber.ToString(), ItemName, Weight.ToString(), Rare.ToString() };
             GachaItem = string.Join(",", words);
         }
     }
