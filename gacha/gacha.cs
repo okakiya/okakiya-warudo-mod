@@ -38,7 +38,7 @@ namespace Warudo.Plugins.Core.Nodes
         public string[] GachaItemList;
 
         [FlowInput]
-        public Continuation Enter()
+        public Continuation Gacha()
         {
             GachaGacha();
             return Exit;
