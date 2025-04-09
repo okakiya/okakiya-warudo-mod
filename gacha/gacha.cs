@@ -77,9 +77,11 @@ namespace Warudo.Plugins.Core.Nodes
         public List<string> RegisterGahcaItemList = new List<string>();
 
         [DataOutput]
-        [Label("Counter")]
-        public int ShowCounter() { return Counter; }
-        public int Counter;
+        [Label("Message")]
+        public string ShowMessage() { return Message; }
+        public string Message = "";
+
+        public List<int> NumList = new List<int>();
 
         protected override void OnCreate()
         {
@@ -98,7 +100,8 @@ namespace Warudo.Plugins.Core.Nodes
 
         public void Makeup()
         {
-            Counter++;
+            Message = "";
+            NumList.Clear();
             RegisterGahcaItemList.Clear();
             AddList(Item1);
             AddList(Item2);
@@ -124,14 +127,35 @@ namespace Warudo.Plugins.Core.Nodes
                 string name = propList[1];
                 float weight = 0.0f;
                 int rare = 0;
-                if (
-                    int.TryParse(propList[0], out num) &&
-                    float.TryParse(propList[2], out weight) &&
-                    int.TryParse(propList[3], out rare) &&
-                    weight > 0
-                    )
+                //TODO テスト
+                if (int.TryParse(propList[0], out num))
                 {
-                    RegisterGahcaItemList.Add(item);
+                    if (
+                        float.TryParse(propList[2], out weight) &&
+                        int.TryParse(propList[3], out rare) &&
+                        num > 0 &&
+                        weight > 0
+                        )
+                    {
+                        int oldNum = NumList.Find(x => x == num);
+                        if (oldNum > 0)
+                        {
+                            Message += "景品No." + oldNum.ToString() + "が重複しています。 ";
+                        }
+                        else
+                        {
+                            NumList.Add(num);
+                            RegisterGahcaItemList.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        Message += "景品No." + num + "の入力値が正しくありません。 ";
+                    }
+                }
+                else
+                {
+                    Message += "どこかの景品No.がInteger>0になっていません。 ";
                 }
             }
         }
@@ -289,6 +313,7 @@ namespace Warudo.Plugins.Core.Nodes
                     int.TryParse(propList[0], out num) &&
                     float.TryParse(propList[2], out weight) &&
                     int.TryParse(propList[3], out rare) &&
+                    num > 0 &&
                     weight > 0
                     )
                 {
