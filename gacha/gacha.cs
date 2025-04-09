@@ -12,15 +12,13 @@ namespace Warudo.Plugins.Core.Nodes
     // ガチャアイテム構造体
     public readonly struct GachaItem
     {
-        public GachaItem(int num, string itemName, float weight, int rare)
+        public GachaItem(string itemName, float weight, int rare)
         {
-            ITEM_NUM = num;
             ITEM_NAME = itemName;
             WEIGHT = weight;
             RARE = rare;
         }
 
-        public int ITEM_NUM { get; }
         public string ITEM_NAME { get; }
         public float WEIGHT { get; }
         public int RARE { get; }
@@ -39,38 +37,38 @@ namespace Warudo.Plugins.Core.Nodes
         [Label("GACHA_ITEM_LIST")]
         public string[] GachaItemList;
 
+        [FlowInput]
+        public Continuation Enter()
+        {
+            GachaGacha();
+            return Exit;
+        }
+
+        [FlowInput]
+        public Continuation Update()
+        {
+            SetupGachaDatabase();
+            return null;
+        }
+
         public int ItemNumber;
         public string ItemName;
         public float ItemWeight;
         public int Rare;
 
-        public string DebugStr; // debug
-
-        [FlowInput]
-        public Continuation Enter()
-        {
-            gachagacha();
-            return Exit;
-        }
-
         [DataOutput]
-        [Label("ITEM_NUMBER")] // You can customize the port label
+        [Label("ITEM_NUMBER")]
         public int ShowItemNumber() { return ItemNumber; }
         [DataOutput]
-        [Label("ITEM_NAME")] // You can customize the port label
+        [Label("ITEM_NAME")]
         public string ShowItemName() { return ItemName; }
         [DataOutput]
-        [Label("ITEM_WEIGHT")] // You can customize the port label
+        [Label("ITEM_WEIGHT")]
         public float ShowItemWeight() { return ItemWeight; }
         [DataOutput]
-        [Label("RARE")] // You can customize the port label
+        [Label("RARE")]
         public int ShowRare() { return Rare; }
 
-        [DataOutput]
-        [Label("DEBUG")] // You can customize the port label
-        public string ShowDebug() { return DebugStr; } // debug
-
-        // Usually, we name the default flow input "Exit".
         [FlowOutput]
         public Continuation Exit;
 
@@ -84,8 +82,14 @@ namespace Warudo.Plugins.Core.Nodes
         protected override void OnCreate()
         {
             base.OnCreate();
-            Watch(nameof(GachaItemList), SetupGachaDatabase);
-            SetupGachaDatabase();
+            // StringリストだとWatchが回り続けるので一旦やめる
+            // Watch(nameof(GachaItemList), SetupGachaDatabase);
+            // SetupGachaDatabase();
+        }
+
+        public void InitDb()
+        {
+            this.GACHA_ITEM_LIST = new Dictionary<int, GachaItem>();
         }
 
         public void Add(int num, GachaItem gachaItem)
@@ -103,52 +107,62 @@ namespace Warudo.Plugins.Core.Nodes
             return this.GACHA_ITEM_LIST[num];
         }
 
+        public void InitGachaResult()
+        {
+            ItemNumber = 0;
+            ItemName = null;
+            ItemWeight = 0.0f;
+            Rare = 0;
+        }
+
         public void SetupGachaDatabase()
         {
-            // TODO 値検査
+            InitDb();
             foreach (string item in GachaItemList)
             {
                 string[] propList = item.Split(',');
-                int num = Convert.ToInt32(propList[0]);
-                Add(
-                    num,
-                    new GachaItem(
-                        num,
-                        propList[1],
-                        Convert.ToSingle(propList[2]),
-                        Convert.ToInt32(propList[3])
-                    )
-                );
-                // 0,testname,0.5,2
-                // GachaDatabaseManage.data.Add(0, 0, new GachaItem(0, 0, "testname", 0.5f, 2));
+                float weight = Convert.ToSingle(propList[2]);
+                if (weight > 0)
+                {
+                    Add(
+                        Convert.ToInt32(propList[0]),
+                        new GachaItem(
+                            propList[1],
+                            weight,
+                            Convert.ToInt32(propList[3])
+                        )
+                    );
+                }
             }
         }
 
-        protected void gachagacha()
+        protected void GachaGacha()
         {
+            InitGachaResult();
+
             Dictionary<int, GachaItem> itemList = Get();
 
             float sumWeight = 0.0f;
-            // TODO Dictionaryのforeachの書き方見直す
-            foreach (GachaItem item in itemList) {
-                sumWeight = sumWeight + item.WEIGHT;
+            foreach (KeyValuePair<int, GachaItem> item in itemList)
+            {
+                sumWeight = sumWeight + item.Value.WEIGHT;
             }
 
             float res = UnityEngine.Random.Range(0.0f, sumWeight);
 
             float nowWeight = 0.0f;
-            foreach (GachaItem item in itemList) {
-                nowWeight = nowWeight + item.WEIGHT;
-                if (res <= nowWeight) {
-                    ItemNumber = num;
-                    ItemName = item.ITEM_NAME;
-                    ItemWeight = item.WEIGHT;
-                    Rare = item.RARE;
+            foreach (KeyValuePair<int, GachaItem> item in itemList)
+            {
+                nowWeight = nowWeight + item.Value.WEIGHT;
+                if (res <= nowWeight)
+                {
+                    ItemNumber = item.Key;
+                    ItemName = item.Value.ITEM_NAME;
+                    ItemWeight = item.Value.WEIGHT;
+                    Rare = item.Value.RARE;
+                    break;
                 }
             }
-
-            GachaItem item = GetByNum(0);
-            // TODO 値参照例外処理
         }
     }
 }
