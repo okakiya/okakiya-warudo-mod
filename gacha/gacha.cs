@@ -70,7 +70,8 @@ namespace Warudo.Plugins.Core.Nodes
 
         [DataOutput]
         [Label("GachaItemList")]
-        public string[] OutputRegisterGahcaItemList() {
+        public string[] OutputRegisterGahcaItemList()
+        {
             return RegisterGahcaItemList.ToArray();
         }
         public List<string> RegisterGahcaItemList = new List<string>();
@@ -112,28 +113,26 @@ namespace Warudo.Plugins.Core.Nodes
 
         public void AddList(string item)
         {
-            if (item == null) {
+            if (item == null)
+            {
                 return;
             }
             string[] propList = item.Split(',');
             if (propList.Length >= 4)
             {
-                // float weight = Convert.ToSingle(propList[2]);
+                int num = 0;
+                string name = propList[1];
                 float weight = 0.0f;
+                int rare = 0;
                 if (
+                    int.TryParse(propList[0], out num) &&
                     float.TryParse(propList[2], out weight) &&
+                    int.TryParse(propList[3], out rare) &&
                     weight > 0
-                )
+                    )
                 {
                     RegisterGahcaItemList.Add(item);
                 }
-                // try
-                // {
-                //     float weight = Convert.ToSingle(propList[2]);
-                // }
-                // catch (Exception e) {
-                //     Console.WriteLine("Somthing Wrong.");
-                // }
             }
         }
     }
@@ -282,15 +281,23 @@ namespace Warudo.Plugins.Core.Nodes
             foreach (string item in GachaItemList)
             {
                 string[] propList = item.Split(',');
-                float weight = Convert.ToSingle(propList[2]);
-                if (weight > 0)
+                int num = 0;
+                string name = propList[1];
+                float weight = 0.0f;
+                int rare = 0;
+                if (
+                    int.TryParse(propList[0], out num) &&
+                    float.TryParse(propList[2], out weight) &&
+                    int.TryParse(propList[3], out rare) &&
+                    weight > 0
+                    )
                 {
                     Add(
-                        Convert.ToInt32(propList[0]),
+                        num,
                         new GachaItem(
-                            propList[1],
+                            name,
                             weight,
-                            Convert.ToInt32(propList[3])
+                            rare
                         )
                     );
                 }
