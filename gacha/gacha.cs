@@ -27,10 +27,10 @@ namespace Warudo.Plugins.Core.Nodes
 
     [NodeType(
         Id = "0ac03086-79f1-d79a-1578-0cd1f6e696f1",
-        Title = "RegisterGachaItem",
+        Title = "GachaTable",
         Category = "Gacha"
     )]
-    public class RegisterGachaItem : Node
+    public class GachaTable : Node
     {
         [DataInput]
         [Label("Item1")]
@@ -103,61 +103,56 @@ namespace Warudo.Plugins.Core.Nodes
             Message = "";
             NumList.Clear();
             RegisterGahcaItemList.Clear();
-            AddList(Item1);
-            AddList(Item2);
-            AddList(Item3);
-            AddList(Item4);
-            AddList(Item5);
-            AddList(Item6);
-            AddList(Item7);
-            AddList(Item8);
-            AddList(Item9);
+            AddList(Item1, 1);
+            AddList(Item2, 2);
+            AddList(Item3, 3);
+            AddList(Item4, 4);
+            AddList(Item5, 5);
+            AddList(Item6, 6);
+            AddList(Item7, 7);
+            AddList(Item8, 8);
+            AddList(Item9, 9);
         }
 
-        public void AddList(string item)
+        public void AddList(string item, int listNum)
         {
-            if (item == null)
+            if (item == null || item == "")
             {
                 return;
             }
             string[] propList = item.Split(',');
-            if (propList.Length >= 4)
+            if (propList.Length < 4)
             {
-                int num = 0;
-                string name = propList[1];
-                float weight = 0.0f;
-                int rare = 0;
-                //TODO テスト
-                if (int.TryParse(propList[0], out num))
-                {
-                    if (
-                        float.TryParse(propList[2], out weight) &&
-                        int.TryParse(propList[3], out rare) &&
-                        num > 0 &&
-                        weight > 0
-                        )
-                    {
-                        int oldNum = NumList.Find(x => x == num);
-                        if (oldNum > 0)
-                        {
-                            Message += "景品No." + oldNum.ToString() + "が重複しています。 ";
-                        }
-                        else
-                        {
-                            NumList.Add(num);
-                            RegisterGahcaItemList.Add(item);
-                        }
-                    }
-                    else
-                    {
-                        Message += "景品No." + num + "の入力値が正しくありません。 ";
-                    }
-                }
-                else
-                {
-                    Message += "どこかの景品No.がInteger>0になっていません。 ";
-                }
+                Message += "Item" + listNum.ToString() + "が不正です。 ";
+                return;
             }
+            int num = 0;
+            string name = propList[1];
+            float weight = 0.0f;
+            int rare = 0;
+            if (!int.TryParse(propList[0], out num) || num <= 0)
+            {
+                Message += "Item" + listNum.ToString() + "の景品No.がInteger>0になっていません。 ";
+                return;
+            }
+            if (!float.TryParse(propList[2], out weight) || weight <= 0)
+            {
+                Message += "Item" + listNum.ToString() + "の景品の重みがfloat>0になっていません。 ";
+                return;
+            }
+            if (!int.TryParse(propList[3], out rare))
+            {
+                Message += "Item" + listNum.ToString() + "のレア度がIntegerになっていません。 ";
+                return;
+            }
+            int oldNum = NumList.Find(x => x == num);
+            if (oldNum > 0)
+            {
+                Message += "景品No." + oldNum.ToString() + "が重複しています。 ";
+                return;
+            }
+            NumList.Add(num);
+            RegisterGahcaItemList.Add(item);
         }
     }
 
@@ -201,14 +196,22 @@ namespace Warudo.Plugins.Core.Nodes
 
         public void Makeup()
         {
-            // TODO バリデーション Weight>0
-            string[] words = { ItemNumber.ToString(), ItemName, Weight.ToString(), Rare.ToString() };
-            GachaItem = string.Join(",", words);
+            if (ItemNumber <= 0)
+            {
+                GachaItem = "景品No.はInteger>0を入力してください。";
+            }
+            else if (Weight <= 0)
+            {
+                GachaItem = "景品の重みはFloat>0を入力してください。";
+            }
+            else
+            {
+                string[] words = { ItemNumber.ToString(), ItemName, Weight.ToString(), Rare.ToString() };
+                GachaItem = string.Join(",", words);
+            }
         }
     }
 
-
-    // TODO カテゴリーをなんとかする
     [NodeType(
         Id = "1761f98b-2703-a91a-e094-8da9a2641180",
         Title = "doGacha",
