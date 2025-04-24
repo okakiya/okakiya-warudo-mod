@@ -95,7 +95,7 @@ public class GachaTable : Node
         Makeup();
     }
 
-    public void Makeup()
+    public virtual void Makeup()
     {
         Message = "";
         NumList.Clear();
@@ -150,6 +150,90 @@ public class GachaTable : Node
         }
         NumList.Add(num);
         RegisterGahcaItemList.Add(item);
+    }
+}
+
+[NodeType(
+    Id = "279b483c-96dc-d006-7155-210950387156",
+    Title = "GachaTable20",
+    Category = "OkakiyaGacha"
+)]
+public class GachaTable20 : GachaTable
+{
+    [DataInput]
+    [Label("Item10")]
+    public string Item10;
+
+    [DataInput]
+    [Label("Item11")]
+    public string Item11;
+
+    [DataInput]
+    [Label("Item12")]
+    public string Item12;
+
+    [DataInput]
+    [Label("Item13")]
+    public string Item13;
+
+    [DataInput]
+    [Label("Item14")]
+    public string Item14;
+
+    [DataInput]
+    [Label("Item15")]
+    public string Item15;
+
+    [DataInput]
+    [Label("Item16")]
+    public string Item16;
+
+    [DataInput]
+    [Label("Item17")]
+    public string Item17;
+
+    [DataInput]
+    [Label("Item18")]
+    public string Item18;
+
+    [DataInput]
+    [Label("Item19")]
+    public string Item19;
+
+    [DataInput]
+    [Label("Item20")]
+    public string Item20;
+
+    protected override void OnCreate()
+    {
+        Watch(nameof(Item10), Makeup);
+        Watch(nameof(Item11), Makeup);
+        Watch(nameof(Item12), Makeup);
+        Watch(nameof(Item13), Makeup);
+        Watch(nameof(Item14), Makeup);
+        Watch(nameof(Item15), Makeup);
+        Watch(nameof(Item16), Makeup);
+        Watch(nameof(Item17), Makeup);
+        Watch(nameof(Item18), Makeup);
+        Watch(nameof(Item19), Makeup);
+        Watch(nameof(Item20), Makeup);
+        base.OnCreate();
+    }
+
+    public override void Makeup()
+    {
+        base.Makeup();
+        AddList(Item10, 10);
+        AddList(Item11, 11);
+        AddList(Item12, 12);
+        AddList(Item13, 13);
+        AddList(Item14, 14);
+        AddList(Item15, 15);
+        AddList(Item16, 16);
+        AddList(Item17, 17);
+        AddList(Item18, 18);
+        AddList(Item19, 19);
+        AddList(Item20, 20);
     }
 }
 

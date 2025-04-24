@@ -6,10 +6,10 @@ using Warudo.Core.Plugins;
     Id = "okakiya.gachamod",
     Name = "GachaMOD",
     Description = "A simple plugin that support gachagacha.",
-    Version = "1.0.0",
+    Version = "1.1.0",
     Author = "okakiya",
     SupportUrl = "",
-    NodeTypes = new [] { typeof(GachaTable), typeof(MakeGachaItem), typeof(DoGacha) })]
+    NodeTypes = new [] { typeof(GachaTable), typeof(MakeGachaItem), typeof(DoGacha), typeof(GachaTable20) })]
 public class GachaPlugin : Plugin {
 
     protected override void OnCreate() {
