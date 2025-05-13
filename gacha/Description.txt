@@ -1,3 +1,5 @@
+Update: GachaTable20を追加しました
+
 # おかき式ガチャシステム (Okakiya-GACHA system)
 
 ランダム景品抽選支援ツールです。
@@ -5,6 +7,7 @@
 [list]
     [*]MakeGachaItem
     [*]GachaTable
+    [*]GachaTable20
     [*]DoGacha
 [/list]
 
